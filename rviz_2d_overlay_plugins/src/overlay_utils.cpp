@@ -41,6 +41,7 @@
 #include <rviz_common/logging.hpp>
 
 namespace rviz_2d_overlay_plugins {
+#ifdef RVIZ_2D_OVERLAY_HAS_CUSTOM_OVERLAYS
     namespace {
         class DisplayOverlay : public Ogre::Overlay {
           public:
@@ -59,6 +60,7 @@ namespace rviz_2d_overlay_plugins {
             rviz_common::Display *display_;
         };
     } // namespace
+#endif
 
     ScopedPixelBuffer::ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer) :
         pixel_buffer_(pixel_buffer) {
@@ -103,6 +105,7 @@ namespace rviz_2d_overlay_plugins {
     OverlayObject::OverlayObject(const std::string &name, rviz_common::Display *display) : name_(name) {
         std::string material_name = name_ + "Material";
         Ogre::OverlayManager *mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
+#ifdef RVIZ_2D_OVERLAY_HAS_CUSTOM_OVERLAYS
         if (display) {
             auto display_overlay = std::make_unique<DisplayOverlay>(name_, display);
             mOverlayMgr->addOverlay(display_overlay.get());
@@ -110,6 +113,10 @@ namespace rviz_2d_overlay_plugins {
         } else {
             overlay_ = mOverlayMgr->create(name_);
         }
+#else
+        (void)display;
+        overlay_ = mOverlayMgr->create(name_);
+#endif
         panel_ = static_cast<Ogre::PanelOverlayElement *>(mOverlayMgr->createOverlayElement("Panel", name_ + "Panel"));
         panel_->setMetricsMode(Ogre::GMM_PIXELS);
 
